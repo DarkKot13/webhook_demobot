@@ -18,7 +18,7 @@ define("DEMOBOT_USERBOT_TOKEN", "00000000-0000-0000-0000-0000000000000");
 
 The Demobot project must be added to your server, and then do the following:
 - export the value for the token variable:<br>
-  `export DEMOBOT_USERBOT_TOKEN=токен-вашего-бота`
+  `export DEMOBOT_USERBOT_TOKEN=your-token-here`
 - replace the config `config/const.template.php` to another config file as `config/const.php`:<br>
   `envsubst < config/const.template.php > config/const.php;`
 - run the script located on the path: `cli/init_bot.php`. This script will completely update the list of commands of your bot in the Compass app, adding commands to demonstrate the work of Demobot;
@@ -31,7 +31,7 @@ To work with containers, you must have Docker installed on the web server.
 
 The Demobot project must be added to your server, and then do the following:
 - export the value for the token variable:<br>
-  `export DEMOBOT_USERBOT_TOKEN=токен-вашего-бота`
+  `export DEMOBOT_USERBOT_TOKEN=your-token-here`
 - run the command to launch containers:<br>
   `docker-compose up -d --build`
 - configure the web server so that requests are redirected to the nginx container.
