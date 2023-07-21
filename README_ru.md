@@ -1,52 +1,89 @@
-## Проект для демонстрации работы webhook ботов приложения Compass
-Данный проект представляет собой пример Demobot для возможности ознакомиться с работой webhook ботов в мессенджере
-Compass.
+# Migration guide
 
-## Добавление в проект токена бота
-Для настройки доступов бота необходимо получить токен авторизации внутри приложения.<br>
-Токен бота выдается при создании бота, после чего токен становится доступен в карточке бота.<br>
-После создания бота необходимо добавить токен в конфиг проекта по пути `config/const.template.php`.
-```php
-// добавляем ранее полученный токен авторизации бота
-define("DEMOBOT_USERBOT_TOKEN", "00000000-0000-0000-0000-0000000000000");
-```
+## [V3](https://github.com/getCompass/userbot/blob/master/README_ru.md)
 
-## Разворачивание бота
-### Ручной способ
+Руководство по миграции с версии V2 до версии V3 Userbot API.<br>
+Добавлены следующие изменения для Userbot API:
+  - Все запросы в Userbot API выполняются синхронно и сразу возвращают результат своего выполнения.
+  - Удалён API-метод /request/get.
+  - Изменён способ авторизации запросов к Userbot API - header-заголовок Signature удалён из проекта. Теперь для авторизации запроса необходимо передавать только header-заголовок Authorization.
+  - Изменился список системных ошибок - удалена ошибка "Некорректная подпись для валидации переданных данных".
+  - Запрос, отправляемый на webhook, теперь содержит только header-заголовок Authorization.
+  - Добавилась возможность синхронного ответа на запрос, пришедший на ваш webhook. 
 
-- `config/const.template.php` - пример конфига бота;
-- `cli/init_bot.php` - скрипт для инициализации бота.
+**Инструкция для миграции Userbot API:**
+1) Поправьте все запросы к Userbot API, указав в URL запроса новую версию API (версия 3).<br>
+Было: <br>
+`https://userbot.getcompass.com/api/v2/user/send` <br>
+Стало: <br>
+`https://userbot.getcompass.com/api/v3/user/send` <br>
 
-Проект Demobot необходимо добавить на ваш сервер, после чего выполнить следующее:
-- экспортировать значение для переменной токена:<br>
-  `export DEMOBOT_USERBOT_TOKEN=токен-вашего-бота`
-- выполнить замену конфига `config/const.template.php` в другой файл-конфиг как `config/const.php`:<br>
-  `envsubst < config/const.template.php > config/const.php;`
-- запустить скрипт, расположенный по пути: `cli/init_bot.php`. Данный скрипт полностью обновит список команд вашего бота в приложении Compass, добавив команды для демонстрации работы Demobot;
-- настроить веб-сервер таким образом, чтобы запросы перенаправлялись на entrypoint проекта, доступный по пути: `entrypoint/demobot/index.php`.
+2) Удалите использование метода /request/get.
 
-### C помощью Docker 
+3) Все методы из [Списка методов Compass Userbot API](https://github.com/getCompass/userbot/blob/master/README_ru.md#Список-методов-Compass-Userbot-API) теперь сразу возвращают результат своего выполнения.<br>
+Замените получение request_id для методов на тот ответ, который ожидается в случае успешного выполнения запроса.
 
-Для вашего удобства в проект были добавлены docker-compose, чтобы была возможность развернуть бота с помощью контейнеров.<br>
-Для работы с контейнерами необходимо иметь на веб-сервере установленный Docker.
+4) Удалите передачу заголовка Signature для запросов к V3 Userbot API.<br>
+Теперь для валидации запроса необходимо передавать один header-заголовок:<br>
+заголовок **"Authorization: bearer=<токен бота>"** содержит токен вашего бота. 
 
-Проект Demobot необходимо добавить на ваш сервер, после чего выполнить следующее:
-- экспортировать значение для переменной токена:<br>
-  `export DEMOBOT_USERBOT_TOKEN=токен-вашего-бота`
-- выполнить команду для запуска контейнеров:<br>
-  `docker-compose up -d --build`
-- настроить веб-сервер таким образом, чтобы запросы перенаправлялись в контейнер nginx.
+5) Удалите для V3 Userbot API обработку системной ошибки, которая имеет error_code = 4.
 
-### Проверка работоспособности Demobot
-Чтобы убедиться в том, что Demobot установлен верно на вашем сервере, сделайте следующее:
+**Инструкция для миграции webhook:**
+1) С помощью метода [webhook/setVersion](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-webhooksetversion) установите новую версию (версия 3) webhook для своего бота.
 
-- в приложении Compass проверьте, что у бота обновился список команд. Пример тестовых команд:
-    - `/message to chat`
-    - `/message to thread`
-    - `/add reaction`
-- отправьте команду из чата с ботом, чтобы убедиться, что запрос отправляется на указанный вами webhook.<br>
-  Пример webhook для Demobot: `https://your-domain.com/entrypoint/demobot/index.php`
-- после отправки команды проверьте, что в чат с ботом вернулся ответ от Demobot - это часть демонстрационной работы Demobot.
+2) В вашем проекте, где обрабатывается запрос, пришедший на ваш webhook, удалите обработку заголовка Signature.
 
-Подробнее о работе ботов можно узнать, перейдя по ссылке:<br>
-[Userbot API ботов](https://github.com/getCompass/userbot/blob/master/README_ru.md).
+
+## [V2](https://github.com/getCompass/userbot/releases/tag/v2)
+
+Руководство по миграции с релизной версии до версии V2 Userbot API.<br>
+Добавлены следующие изменения:
+- Добавлена новая версия Userbot API (версия 2).
+- Изменён способ авторизации запросов к Userbot API - теперь для авторизации запросов используются header-заголовки.
+- Изменён формат параметра user_id: ранее используемый как "User-{ID}", теперь он принимает int-значение.
+- На URL-адрес установленного webhook параметр user_id также передаётся в формате int-значения.
+- Добавлены новые API-методы: [webhook/setVersion](https://github.com/getCompass/userbot#post-webhooksetversion) и [webhook/getVersion](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-webhookgetversion).
+
+Инструкция для миграции:
+1) Поправьте все запросы к Userbot API, указав в URL запроса новую версию API.<br>
+Было: <br>
+`https://userbot.getcompass.com/api/v1/user/send` <br>
+Стало: <br>
+`https://userbot.getcompass.com/api/v2/user/send` <br>
+   
+2) Запросы к V2 Userbot API должны иметь header-заголовки:
+    - заголовок **"Authorization: bearer=<токен бота>"** содержит токен вашего бота;
+    - заголовок **"Signature: signature=<подпись запроса>"** - подпись для валидации данных запроса.
+
+3) В методах [user/send](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-usersend), [user/getList](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-usergetlist) параметр `user_id` имеет формат int-значения.<br>
+Префикс "User-" был удалён.<br>
+>Пример:
+>```json5 
+>{
+>   "user_id": 12345
+>}
+>```
+
+   
+4) При отправке запроса на установленный webhook user_id имеет формат int-значения.<br>
+Префикс "User-" был удалён.<br>
+> Пример отправлямых на webhook данных:
+>```json5 
+>{
+>     "group_id": "",
+>     "message_id": "oDT9FLRWjDOX0+4smgkCn039jKIce+NUE90zy9neDKvh6ubLMDGU/Cee5e07avTPFT/WcnAJIX...",
+>     "text": "/покажи список команд"
+>     "type": "single",
+>     "user_id": 12345,
+>}
+>```
+
+5) Для возможности смены версии webhook вашего бота используйте новые методы Userbot API:
+    - [webhook/setVersion](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-webhooksetversion)
+    - [webhook/getVersion](https://github.com/getCompass/userbot/blob/master/README_ru.md#post-webhookgetversion)
+
+
+## [Userbot release](https://github.com/getCompass/userbot/releases/tag/v1)
+
+- Реализованы чат-боты Compass.
