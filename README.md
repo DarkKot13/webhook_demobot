@@ -43,7 +43,7 @@ To make sure that Demobot is installed correctly on your server, do the followin
     - `/message to chat`
     - `/message to thread`
     - `/add reaction`
-- send a command from the chat with the bot to make sure that the request is sent to the webhook you specified<br>
+- send a command from the chat with the bot to make sure that the request is sent to the webhook you specified.<br>
   Example of a webhook for Demobot: `https://your-domain.com/entrypoint/demobot/index.php`
 - after sending the command, check that the response from Demobot has returned to the chat with the bot - this is part of the demo work of Demobot
 
